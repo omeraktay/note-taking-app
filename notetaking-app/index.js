@@ -11,6 +11,8 @@ import { Strategy as LocalStrategy } from "passport-local";
 import dotenv from "dotenv";
 import connectDB from "./config/db.js";
 import noteRouter from "./routes/noteRoutes.js";
+import userRouter from "./routes/userRoutes.js";
+import cookieParser from "cookie-parser";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -32,7 +34,9 @@ app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(serveFavicon(path.join(__dirname, 'public', 'favicon.ico')));
-app.use('/', noteRouter);
+app.use('/notes', noteRouter);
+app.use('/users', userRouter);
+app.use(cookieParser());
 
 passport.use(new LocalStrategy((username, password, done) => {
     const user = users.find(u => u.username === username && u.password === password);
