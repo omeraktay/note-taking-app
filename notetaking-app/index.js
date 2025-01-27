@@ -50,11 +50,6 @@ passport.use(new LocalStrategy((username, password, done) => {
 
 
 
-
-
-
-
-
 app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);
   });
