@@ -23,6 +23,7 @@ const PORT = process.env.PORT || 3000;
 connectDB();
 dotenv.config();
 
+app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(morgan('dev'));
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -34,17 +35,26 @@ app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(serveFavicon(path.join(__dirname, 'public', 'favicon.ico')));
-app.use('/notes', noteRouter);
-app.use('/users', userRouter);
+app.use('/', noteRouter);
+app.use('/', userRouter);
 app.use(cookieParser());
 
-passport.use(new LocalStrategy((username, password, done) => {
-    const user = users.find(u => u.username === username && u.password === password);
-    if (!user){
-         return done(null, false, { message: 'Invalid credentials.\n' });
-    }
-    return done(null, user);
- }));
+
+app.get('/index', (req, res) => {
+  const notes = [
+      { title: 'Note 1', content: 'Content for note 1' },
+      { title: 'Note 2', content: 'Content for note 2' }
+  ];
+  res.render('index', { notes }); // Pass 'notes' to the template
+});
+
+// passport.use(new LocalStrategy((username, password, done) => {
+//     const user = users.find(u => u.username === username && u.password === password);
+//     if (!user){
+//          return done(null, false, { message: 'Invalid credentials.\n' });
+//     }
+//     return done(null, user);
+//  }));
 
 
 

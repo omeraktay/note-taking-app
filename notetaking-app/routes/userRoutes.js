@@ -1,19 +1,29 @@
-import express from "connect-flash";
+import express from "express";
 import User from "../models/User.js";
 import jwt from "jsonwebtoken";
 import bcrypt from 'bcrypt';
 
 const userRouter = express.Router();
-const JWT_SECRET = process.env.JWT_SECRET;
+const JWT_SECRET = process.env.JWT_SECRET || 'secret-key';
+
+// Welcome page
+userRouter.get('/welcome', (req, res) => {
+    res.render('users/welcome');
+});
 
 // Register page
-userRouter.get('register', (req, res) => {
+userRouter.get('/register', (req, res) => {
     res.render('users/register');
 });
 
 // Login page
 userRouter.get('/login', (req, res) => {
     res.render('users/login');
+});
+
+// Index page to have all notes
+userRouter.get('/index', (req, res) => {
+    res.render('notes/index')
 });
 
 // Register a new user
@@ -27,7 +37,8 @@ userRouter.post('/register', async (req, res) => {
         const hashedPassword = await bcrypt.hash(password, 10); // Hashed version of the password
         const newUser = new User({ username, email, password: hashedPassword });
         await newUser.save();
-        res.redirect('users/login');
+        console.log('User registered successfully!');
+        res.redirect('login');
     } catch (err) {
         console.error(err);
         res.status(500).send('Registration error!! Please try again.')
@@ -40,15 +51,15 @@ userRouter.post('/login', async (req, res) => {
     try {
         const user = await User.findOne({ username });
         if(!user){
-            return res.status(404).send('Invalid username or password!')
+            return res.status(400).send('Invalid username or password!')
         }
         const userMatched = await bcrypt.compare(password, user.password);
         if(!userMatched){
-            return res.status(404).send('Invalid username or password!');
+            return res.status(400).send('Invalid username or password!');
         }
         const token = jwt.sign({ id:user._id }, JWT_SECRET, { expiresIn: '1h' });
         res.cookie('token', token, { httpOnly: true });
-        res.redirect('/notes');
+        res.redirect('index');
     } catch (err) {
         console.error(err);
         res.status(500).send('Logging error! Please enter a valid username or password.')

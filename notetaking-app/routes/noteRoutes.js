@@ -3,14 +3,6 @@ import Note from '../models/Note.js'
 
 const noteRouter = express.Router();
 
-noteRouter.get('/', (req, res) => {
-    res.render('users/welcome');
-})
-
-noteRouter.get('/login', (req, res) => {
-    res.render('users/login');
-});
-
 // Create a new note
 noteRouter.post('/newnote', async (req, res) => {
     try {

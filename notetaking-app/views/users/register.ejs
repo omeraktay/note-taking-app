@@ -1,0 +1,27 @@
+<%- include('../partials/layout', { title: 'Register', body: `
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <h2 class="mb-4 text-center"> Please Register</h2>
+
+            <form style="background-color: burlywood;" action="/register" method="post" class="p-4 border rounded shadow-sm">
+                <div class="mb-3">
+                    <label for="username" class="form-label">Username</label>
+                    <input style="background-color: bisque;"  type="text" id="username" name="username" class="form-control" placeholder="Enter your username" required>
+                </div>
+                <div class="mb-3">
+                    <label for="email" class="form-label">Email</label>
+                    <input style="background-color: bisque;"  type="email" id="email" name="email" class="form-control" placeholder="Enter your email" required>
+                </div>
+                <div class="mb-3">
+                    <label for="password" class="form-label">Password</label>
+                    <input style="background-color: bisque;"  type="password" id="password" name="password" class="form-control" placeholder="Enter your password" required>
+                </div>
+                <div class="d-grid">
+                    <button id="register-button" type="submit" class="btn btn-danger">Register</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+` }) %>
