@@ -31,8 +31,10 @@ userRouter.post("/register", async (req, res) => {
 
         await user.save();
         res.redirect("/users/login");
-    } catch (error) {
-        req.flash("error", "Server error. Please try again.");
+    } 
+    catch (error) {
+        console.error("Registration Error:", error);
+        req.flash("error", "Server error. Please try again!");
         res.redirect("/users/register");
     }
 });
@@ -67,7 +69,7 @@ userRouter.post("/login", async (req, res, next) => {
                 req.flash("error", "Login failed.");
                 return res.redirect("/users/login");
             }
-            return res.redirect("/notes/index");
+            return res.redirect("/notes/profile");
         });
     })(req, res, next);
 });
@@ -76,7 +78,7 @@ userRouter.post("/login", async (req, res, next) => {
 // Logout Route
 userRouter.get("/logout", (req, res) => {
     req.logout(() => {
-        res.redirect("/");
+        res.redirect("/users/login");
     });
 });
 

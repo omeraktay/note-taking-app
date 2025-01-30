@@ -1,4 +1,5 @@
 import express from "express";
+// import expressLayouts from "express-ejs-layouts";
 import session from "express-session";
 import morgan from "morgan";
 import path from 'path';
@@ -48,6 +49,8 @@ app.use(session({ secret: process.env.SESSION_SECRET, resave: false, saveUniniti
 
 // Set the view engine
 app.set('view engine', 'ejs');
+// app.use(expressLayouts);
+// app.set('layout', 'layout')
 app.set('views', path.join(__dirname, 'views'));
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(serveFavicon(path.join(__dirname, 'public', 'favicon.ico')));
@@ -142,9 +145,9 @@ app.use('/users', userRouter);
 // });
 
 
-app.get("/profile", requiresAuth(), (req, res) => {
-  res.render("profile", { user: req.oidc.user });
-});
+// app.get("/profile", requiresAuth(), (req, res) => {
+//   res.render("profile", { user: req.oidc.user });
+// });
 
 // Error handling middleware
 app.use((err, req, res, next) => {
