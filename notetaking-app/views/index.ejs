@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Note-Taking App</title>
+    <link rel="stylesheet" href="/css/styles.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="container mt-4">
+        <h1 class="text-center">Your Notes</h1>
+        
+        <% if (user) { %>
+            <p>Welcome, <%= user.name %> | <a href="/logout">Logout</a></p>
+            
+            <!-- Form to Add a New Note -->
+            <form id="note-form" class="mb-3">
+                <div class="mb-2">
+                    <input type="text" id="note-title" class="form-control" placeholder="Title" required>
+                </div>
+                <div class="mb-2">
+                    <textarea id="note-content" class="form-control" placeholder="Write your note..." required></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">Add Note</button>
+            </form>
+
+            <!-- Display Notes -->
+            <div id="notes-container" class="row">
+                <% notes.forEach(note => { %>
+                    <div class="col-md-4">
+                        <div class="card mb-3">
+                            <div class="card-body">
+                                <h5 class="card-title"><%= note.title %></h5>
+                                <p class="card-text"><%= note.content %></p>
+                                <button class="btn btn-warning btn-sm edit-btn" data-id="<%= note._id %>">Edit</button>
+                                <button class="btn btn-danger btn-sm delete-btn" data-id="<%= note._id %>">Delete</button>
+                            </div>
+                        </div>
+                    </div>
+                <% }); %>
+            </div>
+        <% } else { %>
+            <p class="text-center"><a href="/login">Login</a> to manage your notes.</p>
+        <% } %>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const form = document.getElementById("note-form");
+            form.addEventListener("submit", async (e) => {
+                e.preventDefault();
+                const title = document.getElementById("note-title").value;
+                const content = document.getElementById("note-content").value;
+
+                const res = await fetch("/notes", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ title, content })
+                });
+
+                if (res.ok) location.reload();
+            });
+
+            document.querySelectorAll(".delete-btn").forEach(btn => {
+                btn.addEventListener("click", async () => {
+                    const id = btn.getAttribute("data-id");
+                    await fetch(`/notes/${id}`, { method: "DELETE" });
+                    location.reload();
+                });
+            });
+
+            document.querySelectorAll(".edit-btn").forEach(btn => {
+                btn.addEventListener("click", () => {
+                    const id = btn.getAttribute("data-id");
+                    const title = prompt("New Title:");
+                    const content = prompt("New Content:");
+
+                    if (title && content) {
+                        fetch(`/notes/${id}`, {
+                            method: "PUT",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({ title, content })
+                        }).then(() => location.reload());
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>

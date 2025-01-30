@@ -1,56 +1,111 @@
 import express from "express";
-import Note from '../models/Note.js'
+import Note from "../models/Note.js";
+import pkg from 'express-openid-connect';
+const { requiresAuth } = pkg;
 
 const noteRouter = express.Router();
 
-// Create a new note
-noteRouter.post('/newnote', async (req, res) => {
+noteRouter.get("/index", requiresAuth(), async (req, res) => {
     try {
-        const newNote = new Note(req.body);
+        const notes = await Note.find({ user: req.oidc.user.sub });
+        res.render("index", { user: req.oidc.user, notes });
+    } catch (error) {
+        console.error(error);
+        res.status(500).send("Error retrieving notes!!!");
+    }
+  });
+
+// // GET all notes for logged-in user
+// noteRouter.get("/", requiresAuth(), async (req, res) => {
+//     try {
+//         const notes = await Note.find({ user: req.oidc.user.sub });
+//         res.json(notes);
+//     } catch (error) {
+//         res.status(500).json({ message: "Error retrieving notes." });
+//     }
+// });
+
+// POST a new note
+noteRouter.post("/", requiresAuth(), async (req, res) => {
+    const { title, content } = req.body;
+    if (!title || !content) {
+        return res.status(400).json({ message: "Title and content are required." });
+    }
+
+    try {
+        const newNote = new Note({ title, content, user: req.oidc.user.sub });
         await newNote.save();
-        res.status(201).send(newNote);
-    } catch (err) {
-        res.status(400).json({message: err.message});
+        res.status(201).json(newNote);
+    } catch (error) {
+        res.status(500).json({ message: "Error saving note." });
     }
 });
 
-// Get all the notes
-noteRouter.get('/mynotes', async (req, res) => {
+// PUT (update) a note by ID
+noteRouter.put("/:id", requiresAuth(), async (req, res) => {
     try {
-        const notes = await Note.find();
-        res.send(notes);
-    } catch (err) {
-        res.status(500).json({message: err.message});
-    }
-});
-
-// Update a note by id
-noteRouter.put('/:id', async (req, res) => {
-    try {
-        const { id } = req.params;
-        const { title, content } = req.body;
-        const updateNote = await Note.findByIdAndUpdate(id, { title, content }, {new: true, runValidators: true});
-        if(!updateNote){
-            return res.status(404).json({message: 'Note was not found!'});
+        const note = await Note.findOne({ _id: req.params.id, user: req.oidc.user.sub });
+        if (!note) {
+            return res.status(404).json({ message: "Note not found." });
         }
-        res.send(updateNote);
-    } catch (err) {
-        res.status(500).json({message: err.message});
+
+        note.title = req.body.title || note.title;
+        note.content = req.body.content || note.content;
+        await note.save();
+
+        res.json(note);
+    } catch (error) {
+        res.status(500).json({ message: "Error updating note." });
     }
 });
 
-// Delete a note by id
-noteRouter.delete('/:id', async (req, res) => {
+// DELETE a note by ID
+noteRouter.delete("/:id", requiresAuth(), async (req, res) => {
     try {
-        const deleteNote = await Note.findByIdAndDelete(req.params.id)
-        if(!deleteNote){
-            return res.status(404).json({message: 'We cannot find the note that you are lookig for!'})
+        const note = await Note.findOneAndDelete({ _id: req.params.id, user: req.oidc.user.sub });
+        if (!note) {
+            return res.status(404).json({ message: "Note not found." });
         }
-        res.send(`Note deleted succssfully`);
-    } catch (err) {
-        res.status(500).json({message: err.message});
+
+        res.json({ message: "Note deleted successfully." });
+    } catch (error) {
+        res.status(500).json({ message: "Error deleting note." });
     }
 });
 
+// RESTful API for notes
+// const notes = [];
+// noteRouter.get("/api/notes", requiresAuth(), (req, res) => {
+//   res.json(notes.filter(note => note.user === req.oidc.user.sub));
+// });
+
+// noteRouter.post("/api/notes", requiresAuth(), (req, res) => {
+//   const { title, content } = req.body;
+//   if (!title || !content) {
+//     return res.status(400).json({ message: "Title and content are required." });
+//   }
+//   const newNote = { id: Date.now(), title, content, user: req.oidc.user.sub };
+//   notes.push(newNote);
+//   res.status(201).json(newNote);
+// });
+
+// noteRouter.put("/api/notes/:id", requiresAuth(), (req, res) => {
+//   const note = notes.find(n => n.id == req.params.id && n.user === req.oidc.user.sub);
+//   if (!note) {
+//     return res.status(404).json({ message: "Note not found." });
+//   }
+//   note.title = req.body.title || note.title;
+//   note.content = req.body.content || note.content;
+//   res.json(note);
+// });
+
+// noteRouter.delete("/api/notes/:id", requiresAuth(), (req, res) => {
+//   const index = notes.findIndex(n => n.id == req.params.id && n.user === req.oidc.user.sub);
+//   if (index === -1) {
+//     return res.status(404).json({ message: "Note not found." });
+//   }
+//   notes.splice(index, 1);
+//   res.json({ message: "Note deleted." });
+// });
 
 export default noteRouter;

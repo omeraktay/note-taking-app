@@ -1,75 +1,83 @@
 import express from "express";
+import bcrypt from "bcryptjs";
 import User from "../models/User.js";
-import jwt from "jsonwebtoken";
-import bcrypt from 'bcrypt';
+import passport from "passport";
 
 const userRouter = express.Router();
-const JWT_SECRET = process.env.JWT_SECRET || 'secret-key';
 
-// Welcome page
-userRouter.get('/welcome', (req, res) => {
-    res.render('users/welcome');
+// Render Registration Page
+userRouter.get("/register", (req, res) => {
+    res.render("register", { message: req.flash("error") });
 });
 
-// Register page
-userRouter.get('/register', (req, res) => {
-    res.render('users/register');
-});
+// Handle Registration
+userRouter.post("/register", async (req, res) => {
+    const { name, email, password } = req.body;
+    if (!name || !email || !password) {
+        req.flash("error", "All fields are required.");
+        return res.redirect("/users/register");
+    }
 
-// Login page
-userRouter.get('/login', (req, res) => {
-    res.render('users/login');
-});
-
-// Index page to have all notes
-userRouter.get('/index', (req, res) => {
-    res.render('notes/index')
-});
-
-// Register a new user
-userRouter.post('/register', async (req, res) => {
-    const { username, email, password } = req.body;
     try {
-        const existedUser = await User.findOne( { $or:  [{ username }, { email }]});
-        if(existedUser){
-            return res.status(400).send('Username or email already taken!')
+        let user = await User.findOne({ email });
+        if (user) {
+            req.flash("error", "User already exists.");
+            return res.redirect("/users/register");
         }
-        const hashedPassword = await bcrypt.hash(password, 10); // Hashed version of the password
-        const newUser = new User({ username, email, password: hashedPassword });
-        await newUser.save();
-        console.log('User registered successfully!');
-        res.redirect('login');
-    } catch (err) {
-        console.error(err);
-        res.status(500).send('Registration error!! Please try again.')
-    }   
-});
 
-// User login
-userRouter.post('/login', async (req, res) => {
-    const { username, password } = req.body;
-    try {
-        const user = await User.findOne({ username });
-        if(!user){
-            return res.status(400).send('Invalid username or password!')
-        }
-        const userMatched = await bcrypt.compare(password, user.password);
-        if(!userMatched){
-            return res.status(400).send('Invalid username or password!');
-        }
-        const token = jwt.sign({ id:user._id }, JWT_SECRET, { expiresIn: '1h' });
-        res.cookie('token', token, { httpOnly: true });
-        res.redirect('index');
-    } catch (err) {
-        console.error(err);
-        res.status(500).send('Logging error! Please enter a valid username or password.')
+        const hashedPassword = await bcrypt.hash(password, 10);
+        console.log("Hashed Password Before Saving:", hashedPassword);
+        user = new User({ name, email, password: hashedPassword });
+
+        await user.save();
+        res.redirect("/users/login");
+    } catch (error) {
+        req.flash("error", "Server error. Please try again.");
+        res.redirect("/users/register");
     }
 });
 
-// User logout
-userRouter.post('/logout', (req, res) => {
-    res.clearCookie('toke');
-    res.redirect('/users/welcome');
+// Render Login Page
+userRouter.get("/login", (req, res) => {
+    res.render("users/login", { message: req.flash("error") });
+});
+
+// Handle login
+// userRouter.post("/login", passport.authenticate("local", {
+//     successRedirect: "/users/index",
+//     failureRedirect: "/users/login",
+//     failureFlash: true
+// }));
+
+
+// Handle Login
+userRouter.post("/login", async (req, res, next) => {
+    passport.authenticate("local", async (err, user) => {
+        if (err) {
+            req.flash("error", "Server error!!!");
+            return res.redirect("/users/login");
+        }
+        if (!user) {
+            req.flash("error", "Invalid email or password!!!");
+            return res.redirect("/users/login");
+        }
+
+        req.logIn(user, (err) => {
+            if (err) {
+                req.flash("error", "Login failed.");
+                return res.redirect("/users/login");
+            }
+            return res.redirect("/notes/index");
+        });
+    })(req, res, next);
+});
+
+
+// Logout Route
+userRouter.get("/logout", (req, res) => {
+    req.logout(() => {
+        res.redirect("/");
+    });
 });
 
 export default userRouter;
