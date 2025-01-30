@@ -2,6 +2,8 @@ import express from "express";
 import bcrypt from "bcryptjs";
 import User from "../models/User.js";
 import passport from "passport";
+import pkg from 'express-openid-connect';
+const { requiresAuth } = pkg;
 
 const userRouter = express.Router();
 
@@ -69,11 +71,14 @@ userRouter.post("/login", async (req, res, next) => {
                 req.flash("error", "Login failed.");
                 return res.redirect("/users/login");
             }
-            return res.redirect("/notes/profile");
+            return res.redirect("/users/profile");
         });
     })(req, res, next);
 });
 
+userRouter.get("/profile", requiresAuth(), (req, res) => {
+    res.render("profile", { user: req.oidc.user });
+  });
 
 // Logout Route
 userRouter.get("/logout", (req, res) => {

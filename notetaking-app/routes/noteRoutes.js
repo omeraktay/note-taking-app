@@ -17,10 +17,6 @@ const noteRouter = express.Router();
 //     }
 //   });
 
-  noteRouter.get("/profile", requiresAuth(), (req, res) => {
-  res.render("profile", { user: req.oidc.user });
-});
-
   noteRouter.get("/index", requiresAuth(), async (req, res) => {
     try {
         const notes = await Note.find({ user: req.oidc.user.sub });

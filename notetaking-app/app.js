@@ -18,6 +18,8 @@ import User from "./models/User.js";
 import noteRouter from "./routes/noteRoutes.js";
 import userRouter from "./routes/userRoutes.js";
 import cookieParser from "cookie-parser";
+import https from 'https';
+import fs from 'fs';
 import { auth } from 'express-openid-connect'; // Auth0 integration
 import pkg from 'express-openid-connect';
 const { requiresAuth } = pkg;
@@ -54,6 +56,10 @@ app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(serveFavicon(path.join(__dirname, 'public', 'favicon.ico')));
+
+// Passport initialization
+app.use(passport.initialize());
+app.use(passport.session());
 
 // Local Strategy
 passport.use(
@@ -108,9 +114,6 @@ passport.deserializeUser(async (id, done) => {
     }
 });
 
-app.use(passport.initialize());
-app.use(passport.session());
-
 // Middleware
 app.use(
   session({
@@ -127,7 +130,7 @@ app.use(auth({
   secret: process.env.AUTH0_CLIENT_SECRET,
   baseURL: process.env.BASE_URL,
   clientID: process.env.AUTH0_CLIENT_ID,
-  issuerBaseURL: `http://${process.env.AUTH0_DOMAIN}`,
+  issuerBaseURL: `https://${process.env.AUTH0_DOMAIN}`,
 }));
 
 // Routes
@@ -155,6 +158,15 @@ app.use((err, req, res, next) => {
   res.status(500).send("Something went wrong!");
 });
 
-app.listen(PORT, () => {
-    console.log(`Server is running on http://localhost:${PORT}`);
-  });
+const options = {
+  key: fs.readFileSync("localhost-key.pem"),
+  cert: fs.readFileSync("localhost-cert.pem")
+};
+
+https.createServer(options, app).listen(PORT, () => {
+  console.log(`Server running on https://localhost:${PORT}`);
+});
+
+// app.listen(PORT, () => {
+//     console.log(`Server is running on http://localhost:${PORT}`);
+//   });
