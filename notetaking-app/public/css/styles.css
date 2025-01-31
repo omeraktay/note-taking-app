@@ -3,14 +3,21 @@ body {
     background-color: #f8f9fa;
 }
 
-.container {
-    max-width: 800px;
-}
-
 .card {
     border-radius: 10px;
+    background-color: beige;
+    margin-top: 15px;
 }
 
 .btn {
     margin-right: 5px;
+}
+
+.footer{
+    background-color: black;
+    color: whitesmoke;
+    height: 50px;
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
 }

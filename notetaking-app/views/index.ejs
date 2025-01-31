@@ -4,12 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Note-Taking App</title>
-    <link rel="stylesheet" href="/css/styles.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/css/styles.css">
 </head>
 <body>
     <div class="container mt-4">
-        <h1 class="text-center">Your Notes</h1>
+        <h1 class="mb-4">My Notes</h1>
         
         <% if (user) { %>
             <p>Welcome, <%= user.name %> | <a href="/users/profile">Profile</a> | <a href="/users/login">Logout</a></p>
@@ -20,7 +20,7 @@
                     <input type="text" id="note-title" class="form-control" placeholder="Title" required>
                 </div>
                 <div class="mb-2">
-                    <textarea id="note-content" class="form-control" placeholder="Write your note..." required></textarea>
+                    <textarea id="note-content" style="height: 200px;" class="form-control" placeholder="Write your note..." required></textarea>
                 </div>
                 <button type="submit" class="btn btn-primary">Add Note</button>
             </form>
@@ -28,12 +28,12 @@
             <!-- Display Notes -->
             <div id="notes-container" class="row">
                 <% notes.forEach(note => { %>
-                    <div class="col-md-4">
+                    <div class="col-12">
                         <div class="card mb-3">
                             <div class="card-body">
                                 <h5 class="card-title"><%= note.title %></h5>
                                 <p class="card-text"><%= note.content %></p>
-                                <button class="btn btn-warning btn-sm edit-btn" data-id="<%= note._id %>">Edit</button>
+                                <button class="btn btn-dark btn-sm edit-btn" data-id="<%= note._id %>">Edit</button>
                                 <button class="btn btn-danger btn-sm delete-btn" data-id="<%= note._id %>">Delete</button>
                             </div>
                         </div>
@@ -87,5 +87,9 @@
             });
         });
     </script>
+
+<footer class="text-center mt-5 footer">
+    <p>&copy; Omer Aktay - Note-Taking App - 2025</p>
+</footer>
 </body>
 </html>
