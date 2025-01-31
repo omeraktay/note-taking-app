@@ -15,7 +15,7 @@
         <div class="card mx-auto" style="max-width: 400px;">
             <div class="card-body text-center">
                 <h2>Profile</h2>
-                <p><strong>Name:</strong> <%= user.name %></p>
+                <p><strong>Name:</strong> <%= user.name || user.displayName %></p>
                 <p><strong>Email:</strong> <%= user.email %></p>
                 <a href="/notes/index" class="btn btn-success ">My Notes</a>
                 <a href="/users/login" class="btn btn-danger">Logout</a>

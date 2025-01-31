@@ -12,7 +12,7 @@
         <h1 class="mb-4">My Notes</h1>
         
         <% if (user) { %>
-            <p>Welcome, <%= user.name %> | <a href="/users/profile">Profile</a> | <a href="/users/login">Logout</a></p>
+            <p>Welcome, <%= user.name || user.displayName %> | <a href="/users/profile">Profile</a> | <a href="/users/login">Logout</a></p>
             
             <!-- Form to Add a New Note -->
             <form id="note-form" class="mb-3">

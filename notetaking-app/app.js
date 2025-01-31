@@ -1,20 +1,20 @@
-import express from "express";
+import express from "express"; 
 // import expressLayouts from "express-ejs-layouts";
 import session from "express-session";
-import morgan from "morgan";
+import morgan from "morgan"; 
 import path from 'path';
 import { fileURLToPath } from "url";
 import bodyParser from "body-parser";
 import serveFavicon from "serve-favicon";
 import flash from 'connect-flash';
-import passport from "passport";
-import { Strategy as Auth0Strategy } from "passport-auth0";
-import { Strategy as LocalStrategy } from "passport-local";
-import bcrypt from 'bcryptjs';
+import passport from "./config/passport.js";
+// import { Strategy as Auth0Strategy } from "passport-auth0";
+// import { Strategy as LocalStrategy } from "passport-local";
+// import bcrypt from 'bcryptjs';
 import dotenv from "dotenv";
 import connectDB from "./config/db.js";
-import Note from "./models/Note.js";
-import User from "./models/User.js";
+// import Note from "./models/Note.js";
+// import User from "./models/User.js";
 import noteRouter from "./routes/noteRoutes.js";
 import userRouter from "./routes/userRoutes.js";
 import cookieParser from "cookie-parser";
@@ -61,60 +61,7 @@ app.use(serveFavicon(path.join(__dirname, 'public', 'favicon.ico')));
 app.use(passport.initialize());
 app.use(passport.session());
 
-// Local Strategy
-passport.use(
-  new LocalStrategy(
-    { usernameField: "email" }, // Use email instead of username if needed
-    async (email, password, done) => {
-      try {
-        const user = await User.findOne({ email });
-        if (!user) {
-          console.log("User not found");
-          return done(null, false, { message: "User not found" })
-        };
-        console.log("Entered Password:", password);
-        console.log("Stored Hashed Password:", user.password);
-
-        const isMatch = await bcrypt.compare(password, user.password);
-        console.log("Password Match:", isMatch);
-
-        if (!isMatch) {
-          console.log("Incorrect password!!!");
-          return done(null, false, { message: "Incorrect password!!" })
-        };
-
-        return done(null, user);
-      } catch (error) {
-        return done(error);
-      }
-    }
-  )
-);
-
-passport.use(new Auth0Strategy(
-    {
-      domain: process.env.AUTH0_DOMAIN,
-      clientID: process.env.AUTH0_CLIENT_ID,
-      clientSecret: process.env.AUTH0_CLIENT_SECRET,
-      callbackURL: process.env.AUTH0_CALLBACK_URL,
-    },
-    (accessToken, refreshToken, extraParams, profile, done) => {
-      return done(null, profile); // Pass user profile to session
-    }
-  )
-);
-// Serialize and deserialize user information
-passport.serializeUser((user, done) => done(null, user.id));
-passport.deserializeUser(async (id, done) => {
-    try {
-        const user = await User.findById(id);
-        done(null, user);
-    } catch (error) {
-        done(error);
-    }
-});
-
-// Middleware
+// Session middleware
 app.use(
   session({
     secret: process.env.SESSION_SECRET,
@@ -137,20 +84,13 @@ app.use(auth({
 app.use('/notes', requiresAuth(), noteRouter);
 app.use('/users', userRouter);
 
-// app.get("/users/index", requiresAuth(), async (req, res) => {
-//   try {
-//       const notes = await Note.find({ user: req.oidc.user.sub });
-//       res.render("index", { user: req.oidc.user, notes });
-//   } catch (error) {
-//       console.error(error);
-//       res.status(500).send("Error retrieving notes.");
-//   }
-// });
-
-
-// app.get("/profile", requiresAuth(), (req, res) => {
-//   res.render("profile", { user: req.oidc.user });
-// });
+app.get("/", (req, res) => {
+  const message = "Please log in first!"
+  if (!req.oidc.isAuthenticated()) {
+    return res.redirect("/users/login");
+    }
+  res.render("users/login", { user: req.oidc.user, message });
+});
 
 // Error handling middleware
 app.use((err, req, res, next) => {
@@ -164,7 +104,7 @@ const options = {
 };
 
 https.createServer(options, app).listen(PORT, () => {
-  console.log(`Server running on https://localhost:${PORT}`);
+  console.log(`Server is running on https://localhost:${PORT}`);
 });
 
 // app.listen(PORT, () => {
