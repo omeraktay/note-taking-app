@@ -9,7 +9,8 @@ https://localhost:3000 => Auth0 login
 https://localhost:3000/users/register => Register page
 https://localhost:3000/users/login => Login page
 https://localhost:3000/users/profile => Users' profile page
-https://localhost:3000/notes/index => My notes / To manage CRUD operations for notes 
+https://localhost:3000/notes/index => My notes / To manage CRUD operations for notes
+https://localhost:3000/notes/test-error => Test the error handling middleware
 
 After you initialize npm you need to download the following dependencies: 
 "bcryptjs"
