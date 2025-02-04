@@ -13,11 +13,22 @@ body {
     margin-right: 5px;
 }
 
-.footer{
-    background-color: black;
-    color: whitesmoke;
-    height: 50px;
+html, body {
+    height: 100%;
+    margin: 0;
     display: flex;
-    justify-content: center;
     flex-direction: column;
 }
+  
+footer {
+    background-color: black;
+    color: white;
+    text-align: center;
+    padding: 10px;
+    width: 100%;
+}
+
+main {
+    flex: 1;
+}
+  
