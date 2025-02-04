@@ -1,11 +1,11 @@
-I am creating a Note-Taking App. 
+Note-Taking App.  
 
 <-- important -->
-Run the app with 'https'
+1- Run the app with 'https'.
+2- Register a new user then sign-in when Google account is not signed-in. 
 
 Endpoints:
-https://localhost:3000 => Redirect to login page
-https://localhost:3000/login => Auth0 login
+https://localhost:3000 => Auth0 login
 https://localhost:3000/users/register => Register page
 https://localhost:3000/users/login => Login page
 https://localhost:3000/users/profile => Users' profile page
@@ -31,7 +31,7 @@ After you initialize npm you need to download the following dependencies:
 "passport-local"
 "serve-favicon"
 
-<-- Some errors you might face and solutions -->
+<-- Potential errors you might face and solutions -->
 
 * Error:
 AggregateError: Issuer.discover() failed.

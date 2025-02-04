@@ -2,8 +2,6 @@ import express from "express";
 import bcrypt from "bcryptjs";
 import User from "../models/User.js";
 import passport from "passport";
-import pkg from 'express-openid-connect';
-const { requiresAuth } = pkg;
 
 const userRouter = express.Router();
 
@@ -19,18 +17,15 @@ userRouter.post("/register", async (req, res) => {
         req.flash("error", "All fields are required.");
         return res.redirect("/users/register");
     }
-
     try {
         let user = await User.findOne({ email });
         if (user) {
             req.flash("error", "User already exists.");
             return res.redirect("/users/register");
         }
-
         const hashedPassword = await bcrypt.hash(password, 10);
         console.log("Hashed Password Before Saving:", hashedPassword);
         user = new User({ name, email, password: hashedPassword });
-
         await user.save();
         res.redirect("/users/login");
     } 
@@ -45,15 +40,7 @@ userRouter.post("/register", async (req, res) => {
 userRouter.get("/login", (req, res) => {
     res.render("users/login", { message: req.flash("error") });
 });
-
-// Handle login
-// userRouter.post("/login", passport.authenticate("local", {
-//     successRedirect: "/users/index",
-//     failureRedirect: "/users/login",
-//     failureFlash: true
-// }));
-
-
+  
 // Handle Login
 userRouter.post("/login", async (req, res, next) => {
     passport.authenticate("local", async (err, user) => {
@@ -76,8 +63,26 @@ userRouter.post("/login", async (req, res, next) => {
     })(req, res, next);
 });
 
-userRouter.get("/profile", requiresAuth(), (req, res) => {
-    res.render("profile", { user: req.oidc.user });
+const requiresAuthMiddleware = (req, res, next) => {
+    if (req.isAuthenticated()) {
+      return next(); // User is logged in via passport-local
+    } else if (req.oidc?.isAuthenticated()) {
+      return next(); // User is logged in via Auth0
+    } else {
+      res.redirect("/login"); // Redirect to login if neither authentication method is used
+    }
+  };
+
+  userRouter.get("/profile", requiresAuthMiddleware, (req, res) => {
+    if (req.oidc?.isAuthenticated()) {
+      res.render("profile", { user: req.oidc.user }); // Pass Auth0 user data
+    } 
+    else if (req.isAuthenticated()) {
+      res.render("profile", { user: req.user }); // Pass local user data
+    } 
+    else {
+      res.redirect("/login"); // Fallback just in case
+    }
   });
 
 // Logout Route
